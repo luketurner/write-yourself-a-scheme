@@ -1,5 +1,10 @@
 Following along with the Write Yourself a Scheme book. Trying to do all exercises. Haskell is quite strange, but I love it.
 
+Typos:
+
+in 6.1 list of primitives, one is "string?" but it should be "string>?"
+in the paragraph after, we have "paramateried" instead of "paramaterized"
+
 ### Chapter 3
 
 1. No exercises
