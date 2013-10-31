@@ -1,0 +1,26 @@
+Following along with the Write Yourself a Scheme book. Trying to do all exercises. Haskell is quite strange, but I love it.
+
+### Chapter 3
+
+1. No exercises
+
+2. No exercises
+
+3. All done
+
+4. Todo: #2, #3
+
+### Chapter 4
+
+1. No exercises
+
+2. No exercises
+
+3. No exercises
+
+4. All done
+
+### General Todos
+
+Generally improve symbol? function. (symbol? '()) -> #t, should be #f
+

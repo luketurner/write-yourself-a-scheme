@@ -1,2 +1,2 @@
-simple_parser: simple_parser.hs
-	ghc -package parsec -o simple_parser.out simple_parser.hs
+simple_parser: main.hs
+	ghc -package parsec -o main.out main.hs

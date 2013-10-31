@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveDataTypeable #-}
 module Main where
 
 import System.Environment
@@ -6,7 +5,6 @@ import Numeric
 import Monad
 import Ratio
 import Complex
-import Data.Data
 import Text.ParserCombinators.Parsec hiding (spaces)
 
 -- PROBLEMS
@@ -17,7 +15,7 @@ import Text.ParserCombinators.Parsec hiding (spaces)
 -- 4.1-3 - n/a
 -- 4.4 - done (TODO revisit type-testing and symbol handling later)
 
-data Couble = Couble (Complex Double) deriving (Show, Data, Typeable)
+data Couble = Couble (Complex Double) deriving (Show)
 
 data LispVal = Atom String
              | List [LispVal]
@@ -29,7 +27,7 @@ data LispVal = Atom String
              | Char Char
              | Ratio Rational
              | Complex Couble
-             deriving (Show, Data, Typeable)
+             deriving (Show)
 
 showVal :: LispVal -> String
 showVal (String contents) = "\"" ++ contents ++ "\""
@@ -192,6 +190,10 @@ eval :: LispVal -> LispVal
 eval val@(String _) = val
 eval val@(Number _) = val
 eval val@(Bool _) = val
+eval val@(Float _) = val
+eval val@(Char _) = val
+eval val@(Ratio _) = val
+eval val@(Complex _) = val
 eval (List [Atom "quote", val]) = val
 eval (List (Atom func : args)) = apply func $ map eval args
 
@@ -207,24 +209,63 @@ primitives = [("+", numericBinop (+)),
               ("quotient", numericBinop quot),
               ("remainder", numericBinop rem),
               -- Ex. 4.3.1 (add primitive type checking). TODO ensure functions only accept 1 argument?
-              ("string?", sameConstructor $ String ""),
-              ("number?", sameConstructor $ Number 0),
-              ("bool?", sameConstructor $ Bool True),
-              ("float?", sameConstructor $ Float 1.0),
-              ("char?", sameConstructor $ Char 'a'),
-              ("ratio?", sameConstructor $ Ratio (1 % 1)),
-              ("complex?", sameConstructor $ (Complex . Couble) (1.0 :+ 1.0)),
+              ("string?", isString . head),
+              ("number?", isNumber . head),
+              ("bool?", isBool . head),
+              ("real?", isReal . head),
+              ("char?", isChar . head),
+              ("ratio?", isRational . head),
+              ("complex?", isComplex . head),
               -- Ex. 4.3.3 (symbol? handling)
-              ("symbol?", isSymbol)] 
+              ("symbol?", isSymbol . head)] 
 
-sameConstructor :: LispVal -> [LispVal] -> LispVal
-sameConstructor a (b:_) | toConstr a == toConstr b = Bool True
-                        | otherwise                = Bool False
+--tossTail :: LispVal -> LispVal -> [LispVal] -> LispVal 
+--tossTail f (head:_) = f head
 
--- Ex. 4.3.3 (add symbol?) FIXME returns #t for '()
-isSymbol :: [LispVal] -> LispVal
-isSymbol (List x:_) = Bool True
-isSymbol _ = Bool False
+isBool :: LispVal -> LispVal
+isBool (Bool _) = Bool True
+isBool _ = Bool False
+
+isString :: LispVal -> LispVal
+isString (String _) = Bool True
+isString _ = Bool False
+
+isChar :: LispVal -> LispVal
+isChar (Char _) = Bool True
+isChar _ = Bool False
+
+isNumber :: LispVal -> LispVal
+isNumber (Number _) = Bool True
+isNumber (Float _) = Bool True
+isNumber (Ratio _) = Bool True
+isNumber (Complex _) = Bool True
+isNumber _ = Bool False
+
+isReal :: LispVal -> LispVal
+isReal (Float _) = Bool True
+isReal (Number _) = Bool True
+isReal (Ratio _) = Bool True
+isReal _ = Bool False
+
+isRational :: LispVal -> LispVal
+isRational (Ratio _) = Bool True
+isRational (Number _) = Bool True
+isRational _ = Bool False
+
+isComplex :: LispVal -> LispVal
+--isComplex (Float _) = Bool True
+--isComplex (Number _) = Bool True
+isComplex (Complex _) = Bool True
+isComplex _ = Bool False
+
+isSymbol :: LispVal -> LispVal
+isSymbol (List _) = Bool True
+isSymbol (Atom _) = Bool True
+isSymbol (DottedList _ _) = Bool True
+
+--sameConstructor :: LispVal -> [LispVal] -> LispVal
+--sameConstructor a (b:_) | toConstr a == toConstr b = Bool True
+--                        | otherwise                = Bool False
 
 numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> LispVal
 numericBinop op params = Number $ foldl1 op $ map unpackNum params
