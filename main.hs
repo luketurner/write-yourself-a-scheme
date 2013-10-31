@@ -187,15 +187,9 @@ parseExpr = parseAtom
            return x
 
 eval :: LispVal -> LispVal
-eval val@(String _) = val
-eval val@(Number _) = val
-eval val@(Bool _) = val
-eval val@(Float _) = val
-eval val@(Char _) = val
-eval val@(Ratio _) = val
-eval val@(Complex _) = val
 eval (List [Atom "quote", val]) = val
 eval (List (Atom func : args)) = apply func $ map eval args
+eval val = val
 
 apply :: String -> [LispVal] -> LispVal
 apply func args = maybe (Bool False) ($ args) $ lookup func primitives
