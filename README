@@ -1,10 +1,4 @@
 Following along with the Write Yourself a Scheme book. Trying to do all exercises. Haskell is quite strange, but I love it.
-
-Typos:
-
-in 6.1 list of primitives, one is "string?" but it should be "string>?"
-in the paragraph after, we have "paramateried" instead of "paramaterized"
-
 ### Chapter 3
 
 1. No exercises
@@ -27,5 +21,7 @@ in the paragraph after, we have "paramateried" instead of "paramaterized"
 
 ### General Todos
 
-Generally improve symbol? function. (symbol? '()) -> #t, should be #f
+Generally improve symbol? function. (symbol? '()) -> #t, should be #f.
+
+Allow comparison testing (ordering) for all numeric types in addition to Number.
 
