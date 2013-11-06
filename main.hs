@@ -20,7 +20,7 @@ data LispVal = Atom String
              | Char Char
              | Ratio Rational
              | Complex Couble
-			 
+             
 instance Show LispVal where show = showVal
 
 showVal :: LispVal -> String
@@ -33,7 +33,7 @@ showVal (Char c) = "#\\" ++ [c]
 showVal (List l) = "(" ++ (unwords . map showVal) l ++ ")"
 showVal (DottedList list tail) = "(" ++ (unwords . map showVal) list ++ " . " ++ showVal tail ++ ")"
 showVal c = show c
-			 
+             
 data LispError = NumArgs Integer [LispVal]
                | TypeMismatch String LispVal
                | Parser ParseError
@@ -41,21 +41,21 @@ data LispError = NumArgs Integer [LispVal]
                | NotFunction String String
                | UnboundVar String String
                | Default String
-			   
+               
 instance Show LispError where show = showError
 instance Error LispError where
-	noMsg = Default "An error has occurred"
-	strMsg = Default
+    noMsg = Default "An error has occurred"
+    strMsg = Default
 
 type ThrowsError = Either LispError
-			   
+               
 showError :: LispError -> String
 showError (UnboundVar message varname) = message ++ ": " ++ varname
 showError (BadSpecialForm message form) = message ++ ": " ++ show form
 showError (NotFunction message func) = message ++ ": " ++ show func
 showError (NumArgs expected found) = "Expected " ++ show expected 
                                   ++ " args; found values "
-								  ++ (unwords . map showVal) found
+                                  ++ (unwords . map showVal) found
 showError (TypeMismatch expected found) = "Invalid type: expected " ++ expected
                                        ++ ", found " ++ show found
 showError (Parser parseErr) = "Parse error at " ++ show parseErr
@@ -77,7 +77,7 @@ parseChar = do
     char '#'
     char '\\'
     c <- try (string "space" >> return ' ')
-		<|> try (string "newline" >> return '\n')
+        <|> try (string "newline" >> return '\n')
         <|> alphaNum
     return $ Char c
 
@@ -223,17 +223,17 @@ eval val@(Char _) = return val
 eval val@(Bool _) = return val
 eval (List [Atom "quote", val]) = return val
 eval (List [Atom "if", pred, conseq, alt]) =
-	do result <- eval pred
-	   case result of
-			Bool False -> eval alt
-			otherwise -> eval conseq
+    do result <- eval pred
+    case result of
+            Bool False -> eval alt
+            otherwise -> eval conseq
 eval (List (Atom func : args)) = mapM eval args >>= apply func
 eval bad = throwError $ BadSpecialForm "Unrecognized special form" bad
 
 apply :: String -> [LispVal] -> ThrowsError LispVal
 apply func args = maybe (throwError $ NotFunction "Unrecognized primitive function args" func)
-						($ args)
-						(lookup func primitives)
+                        ($ args)
+                        (lookup func primitives)
 
 primitives :: [(String, [LispVal] -> ThrowsError LispVal)]
 primitives = [("+", numericBinop (+)),
@@ -265,12 +265,12 @@ primitives = [("+", numericBinop (+)),
               ("complex?", typePredicate isComplex),
               -- Ex. 4.3.3 (symbol? handling)
               ("symbol?", typePredicate isSymbol),
-			  ("car", car),
-			  ("cdr", cdr),
-			  ("cons", cons),
-			  ("eqv?", eqv),
-			  ("eq?", eqv),
-			  ("equal?", equal)]
+              ("car", car),
+              ("cdr", cdr),
+              ("cons", cons),
+              ("eqv?", eqv),
+              ("eq?", eqv),
+              ("equal?", equal)]
 boolBinop :: (LispVal -> ThrowsError a) -> (a -> a -> Bool) -> [LispVal] -> ThrowsError LispVal
 boolBinop unpacker op args = if length args /= 2 
                              then throwError $ NumArgs 2 args
@@ -398,17 +398,17 @@ data Unpacker = forall a. Eq a => AnyUnpacker (LispVal -> ThrowsError a)
 
 unpackEquals :: LispVal -> LispVal -> Unpacker -> ThrowsError Bool
 unpackEquals arg1 arg2 (AnyUnpacker unpacker) =
-	do unpacked1 <- unpacker arg1
-	   unpacked2 <- unpacker arg2
-	   return $ unpacked1 == unpacked2
-	`catchError` (const $ return False)
-	
+    do unpacked1 <- unpacker arg1
+    unpacked2 <- unpacker arg2
+    return $ unpacked1 == unpacked2
+    `catchError` (const $ return False)
+    
 equal :: [LispVal] -> ThrowsError LispVal
 equal [arg1, arg2] = do
-	primitiveEquals <- liftM or $ mapM (unpackEquals arg1 arg2)
-					  [AnyUnpacker unpackNum, AnyUnpacker unpackStr, AnyUnpacker unpackBool]
-	eqvEquals <- eqv [arg1, arg2]
-	return $ Bool $ (primitiveEquals || let (Bool x) = eqvEquals in x)
+    primitiveEquals <- liftM or $ mapM (unpackEquals arg1 arg2)
+                      [AnyUnpacker unpackNum, AnyUnpacker unpackStr, AnyUnpacker unpackBool]
+    eqvEquals <- eqv [arg1, arg2]
+    return $ Bool $ (primitiveEquals || let (Bool x) = eqvEquals in x)
 
 readExpr :: String -> ThrowsError LispVal
 readExpr input = case parse parseExpr "lisp" input of
@@ -417,6 +417,6 @@ readExpr input = case parse parseExpr "lisp" input of
 
 main :: IO ()
 main = do
-	args <- getArgs
-	evaled <- return $ liftM show $ readExpr (args !! 0) >>= eval
-	putStrLn $ extractValue $ trapError evaled
+    args <- getArgs
+    evaled <- return $ liftM show $ readExpr (args !! 0) >>= eval
+    putStrLn $ extractValue $ trapError evaled
